@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Getting Repo files') {
             steps {
-                git branch: "main", credentialsId: 'jenkins-token', url: "${REPO_URL}"
+                git branch: "${GIT_BRANCH}", credentialsId: 'jenkins-token', url: "${REPO_URL}"
             }
         }
 
@@ -31,9 +31,9 @@ pipeline {
                         sh """
                             echo ${DOCKER_PASSWORD} | docker login -u ${DOCKER_USERNAME} --password-stdin
 
-                            docker tag ${APP_NAME}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${APP_NAME}:${BUILD_NUMBER}
+                            docker tag ${APP_NAME}:${BUILD_NUMBER} ${DOCKER_USERNAME}/${APP_NAME}-${GIT_BRANCH}:${BUILD_NUMBER}
 
-                            docker push ${DOCKER_USERNAME}/${APP_NAME}:${BUILD_NUMBER}
+                            docker push ${DOCKER_USERNAME}/${APP_NAME}-${GIT_BRANCH}:${BUILD_NUMBER}
                         """
 
                     }
@@ -45,7 +45,7 @@ pipeline {
             steps {
                 script {
                     sh """
-                        docker run -p 5000:5000 --name "${APP_NAME}"-"main"-${BUILD_NUMBER} -d ${APP_NAME}:${BUILD_NUMBER}
+                        docker run -p 5000:5000 --name "${APP_NAME}"-${GIT_BRANCH}-${BUILD_NUMBER} -d ${APP_NAME}:${BUILD_NUMBER}   
                         docker ps
                     """
                 }
